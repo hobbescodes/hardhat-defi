@@ -26,6 +26,10 @@ const main = async () => {
     const daiTokenAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"
     await borrowDai(daiTokenAddress, lendingPool, amountDaiToBorrowWei, deployer)
     await getBorrowUserData(lendingPool, deployer)
+
+    // REPAY
+    await repay(amountDaiToBorrowWei, daiTokenAddress, lendingPool, deployer) // NOTE: even after you repay, you will still have a small amount borrowed because you accrued some interest
+    await getBorrowUserData(lendingPool, deployer)
 }
 
 // get the lendingPool address from the provider (provide ABI for AddressProvider, its address, and an account to lend from)
@@ -76,6 +80,13 @@ const borrowDai = async (daiAddress, lendingPool, amountDaiToBorrowWei, account)
     const borrowTx = await lendingPool.borrow(daiAddress, amountDaiToBorrowWei, 1, 0, account)
     await borrowTx.wait(1)
     console.log(`Youve borrowed!`)
+}
+
+const repay = async (amount, daiAddress, lendingPool, account) => {
+    await approveERC20(daiAddress, lendingPool.address, amount, account)
+    const repayTx = await lendingPool.repay(daiAddress, amount, 1, account)
+    await repayTx.wait(1)
+    console.log("Repaid!")
 }
 
 main()
